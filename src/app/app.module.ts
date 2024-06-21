@@ -7,8 +7,7 @@ import { PageOneComponent } from './page-one/page-one.component';
 import { PageTwoComponent } from './page-two/page-two.component';
 import { PageThreeComponent } from './page-three/page-three.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-
+import { MatSnackBarModule } from '@angular/material/snack-bar'
 @NgModule({
   declarations: [
     AppComponent,
@@ -20,7 +19,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-  
+    MatSnackBarModule
 ],
   providers: [],
   bootstrap: [AppComponent]
