@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 @Component({
   selector: 'app-page-one',
   templateUrl: './page-one.component.html',
