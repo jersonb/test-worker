@@ -1,6 +1,10 @@
-import { Observable, Subject } from "rxjs";
+import { Injectable } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
 
-export class AppWorker {
+@Injectable({
+  providedIn: 'root',
+})
+export class AppWorkerService {
   private readonly worker: Worker;
   private onMessage = new Subject<MessageEvent>();
   private onError = new Subject<ErrorEvent>();
@@ -9,8 +13,7 @@ export class AppWorker {
     const WORKER_ENABLED = !!Worker;
 
     if (WORKER_ENABLED) {
-
-      this.worker =new Worker(new URL('./app.worker', import.meta.url));
+      this.worker = new Worker(new URL('./app.worker', import.meta.url));
 
       this.worker.onmessage = (data) => {
         this.onMessage.next(data);
@@ -20,15 +23,17 @@ export class AppWorker {
         this.onError.next(data);
       };
     } else {
-      throw new Error("WebWorker is not enabled");
+      throw new Error('WebWorker is not enabled');
     }
   }
 
-  addEventListener(func:any){
-    this.worker.addEventListener("message", (event) =>  func.call(this, event.data));
+  addEventListener(func: any) {
+    this.worker.addEventListener('message', (event) =>
+      func.call(this, event.data)
+    );
   }
 
-  postMessage(data:any) {
+  postMessage(data: any) {
     this.worker.postMessage(data);
   }
 

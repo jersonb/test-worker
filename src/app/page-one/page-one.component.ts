@@ -1,14 +1,15 @@
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AppWorker } from '../app-worker';
+import { AppWorkerService } from '../app.worker.service';
 @Component({
   selector: 'app-page-one',
   templateUrl: './page-one.component.html',
   styleUrls: ['./page-one.component.css'],
 })
 export class PageOneComponent {
-  worker = new AppWorker();
-  constructor(private snackBar: MatSnackBar) {}
+  constructor(
+    private snackBar: MatSnackBar,
+    private worker: AppWorkerService) {}
 
   sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -18,7 +19,6 @@ export class PageOneComponent {
       let check = new Date().getSeconds() % 5 === 0;
       if (check) {
         console.log('Sucess!');
-        this.worker.terminate();
         this.showNotification();
         return;
       }
