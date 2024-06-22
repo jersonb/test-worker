@@ -1,13 +1,32 @@
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AppWorker } from '../app-worker';
 @Component({
   selector: 'app-page-one',
   templateUrl: './page-one.component.html',
   styleUrls: ['./page-one.component.css'],
 })
 export class PageOneComponent {
-  constructor(private snackBar: MatSnackBar){}
-  show() {
+  worker = new AppWorker();
+  constructor(private snackBar: MatSnackBar) {}
+
+  sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  async generateReport(data: any): Promise<any> {
+    this.sleep(3000).then(() => {
+      console.log('Wait!');
+      let check = new Date().getSeconds() % 5 === 0;
+      if (check) {
+        console.log('Sucess!');
+        this.worker.terminate();
+        this.showNotification();
+        return;
+      }
+      return this.generateReport(data);
+    });
+  }
+
+  private showNotification() {
     this.snackBar.open('Your message here', 'Close', {
       duration: 6000,
       horizontalPosition: 'center', // Options: 'start', 'center', 'end'
@@ -15,18 +34,12 @@ export class PageOneComponent {
       direction: 'rtl',
       panelClass: ['custom-snackbar', 'snackbar-success'],
     });
+  }
 
-    if (typeof Worker !== 'undefined') {
-      // Create a new
-      const worker = new Worker(new URL('../app.worker', import.meta.url));
-      worker.onmessage = ({ data }) => {
-        console.log(`page got message: ${data}`);
-      };
-      worker.postMessage('hello');
-    } else {
-      // Web Workers are not supported in this environment.
-      // You should add a fallback so that your program still executes correctly.
-    }
-
+  show() {
+    this.worker.addEventListener(() => {
+      this.generateReport(new Date());
+    });
+    this.worker.postMessage({ limit: 300000 });
   }
 }
