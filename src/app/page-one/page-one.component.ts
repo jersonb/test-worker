@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AppWorkerService } from '../app.worker.service';
 @Component({
@@ -6,20 +6,45 @@ import { AppWorkerService } from '../app.worker.service';
   templateUrl: './page-one.component.html',
   styleUrls: ['./page-one.component.css'],
 })
-export class PageOneComponent {
+export class PageOneComponent implements OnInit {
+  btnName = 'Solicitação enviada';
+  btnDisabled = false;
+
   constructor(
-    private snackBar: MatSnackBar,
-    private worker: AppWorkerService) {}
+    private readonly snackBar: MatSnackBar,
+    private readonly worker: AppWorkerService
+  ) {}
 
-  sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  async generateReport(data: any): Promise<any> {
+  ngOnInit(): void {
+    if (localStorage.getItem('btn-status') === '') {
+      this.btnEnable();
+    }
+  }
+
+  private btnDisable() {
+    this.btnDisabled = true;
+    this.btnName = 'Solicitação enviada';
+    localStorage.setItem('btn-status', 'disabled');
+  }
+
+  private btnEnable() {
+    this.btnDisabled = false;
+    this.btnName = 'Enviar Solicitação';
+    localStorage.setItem('btn-status', '');
+  }
+
+  private sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+  private async generateReport(data: any): Promise<any> {
+    this.btnDisable();
     this.sleep(3000).then(() => {
       console.log('Wait!');
       let check = new Date().getSeconds() % 5 === 0;
       if (check) {
         console.log('Sucess!');
         this.showNotification();
+        this.btnEnable();
         return;
       }
       return this.generateReport(data);
@@ -40,6 +65,6 @@ export class PageOneComponent {
     this.worker.addEventListener(() => {
       this.generateReport(new Date());
     });
-    this.worker.postMessage({ limit: 300000 });
+    this.worker.postMessage({ status: 'sended' });
   }
 }
