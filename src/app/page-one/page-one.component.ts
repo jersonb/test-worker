@@ -9,12 +9,7 @@ import { AppWorkerService } from '../app.worker.service';
 export class PageOneComponent implements OnInit {
   btnName = 'Solicitação enviada';
   btnDisabled = false;
-
-  constructor(
-    private readonly snackBar: MatSnackBar,
-    private readonly worker: AppWorkerService
-  ) {}
-
+  constructor(private readonly snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
     if (localStorage.getItem('btn-status') === '') {
@@ -62,9 +57,9 @@ export class PageOneComponent implements OnInit {
   }
 
   show() {
-    this.worker.addEventListener(() => {
+    const worker = new AppWorkerService();
+    worker.addEventListener(() => {
       this.generateReport(new Date());
     });
-    this.worker.postMessage({ status: 'sended' });
   }
 }

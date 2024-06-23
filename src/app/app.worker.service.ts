@@ -31,6 +31,7 @@ export class AppWorkerService {
     this.worker.addEventListener('message', (event) =>
       func.call(this, event.data)
     );
+    this.postMessage({ status: 'added' });
   }
 
   postMessage(data: any) {
