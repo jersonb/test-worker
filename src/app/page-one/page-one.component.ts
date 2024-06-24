@@ -13,6 +13,7 @@ import { SlowRequest } from '../models';
 export class PageOneComponent implements OnInit {
   btnName = 'Solicitação enviada';
   btnDisabled = false;
+  worker: AppWorkerService = null!!;
   constructor(
     private readonly snackBar: MatSnackBar,
     private readonly slowApiService: SlowApiService
@@ -22,6 +23,19 @@ export class PageOneComponent implements OnInit {
     if (localStorage.getItem('btn-status') === '') {
       this.btnEnable();
     }
+  }
+
+  submit() {
+    this.worker = new AppWorkerService();
+    const request: SlowRequest = {
+      requestId: uuidv4(),
+    };
+
+    this.slowApiService.post(request);
+
+    this.worker.addEventListener(() => {
+      this.generateSlowRequest(request.requestId);
+    });
   }
 
   private btnDisable() {
@@ -39,50 +53,46 @@ export class PageOneComponent implements OnInit {
   private sleep = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
 
-  private async generateReport(requestId: string): Promise<any> {
+  private async generateSlowRequest(requestId: string): Promise<any> {
     this.btnDisable();
 
-    this.slowApiService.get(requestId).subscribe((report: number) => {
-      if (report === 1) {
-        console.log('Sucess!');
-        this.showNotification();
-        this.btnEnable();
-        return;
-      }
-
-      if (report === -1) {
-        console.log('Error!');
-        this.showNotification();
-        this.btnEnable();
-        return;
-      }
-      this.sleep(3000).then(() => {
-        console.log('Wait!');
-        return this.generateReport(requestId);
+    this.sleep(3000).then(() => {
+      this.slowApiService.get(requestId).subscribe((result: number) => {
+        if (result === -1) {
+          console.log('Erro!');
+          this.showFailNotification();
+          this.worker.terminate();
+          this.btnEnable();
+          return;
+        }
+        if (result === 1) {
+          console.log('Sucesso!');
+          this.showSuccessNotification();
+          this.btnEnable();
+          this.worker.terminate();
+          return;
+        }
+        console.log('Aguarde!!');
+        return this.generateSlowRequest(requestId);
       });
     });
   }
 
-  private showNotification() {
-    this.snackBar.open('Your message here', 'Close', {
+  private showSuccessNotification() {
+    this.snackBar.open('Sucesso!!!', 'Fechar', {
       duration: 6000,
       horizontalPosition: 'center', // Options: 'start', 'center', 'end'
-      verticalPosition: 'bottom', // Options: 'top', 'bottom'
-      direction: 'rtl',
-      panelClass: ['custom-snackbar', 'snackbar-success'],
+      verticalPosition: 'bottom', // Options: 'top', 'bottom',
+      panelClass: ['green-snackbar'],
     });
   }
 
-  show() {
-    const worker = new AppWorkerService();
-    const request: SlowRequest = {
-      requestId: uuidv4(),
-    };
-
-    this.slowApiService.post(request);
-
-    worker.addEventListener(() => {
-      this.generateReport(request.requestId);
+  private showFailNotification() {
+    this.snackBar.open('Falhou!!!', 'Fechar', {
+      duration: 6000,
+      horizontalPosition: 'center', // Options: 'start', 'center', 'end'
+      verticalPosition: 'bottom', // Options: 'top', 'bottom',
+      panelClass: ['red-snackbar'],
     });
   }
 }
