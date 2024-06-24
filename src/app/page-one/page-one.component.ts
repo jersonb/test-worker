@@ -39,18 +39,27 @@ export class PageOneComponent implements OnInit {
   private sleep = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
 
-  private async generateReport(request: SlowRequest): Promise<any> {
+  private async generateReport(requestId: string): Promise<any> {
     this.btnDisable();
-    this.sleep(3000).then(() => {
-      console.log('Wait!');
-      let check = new Date().getSeconds() % 5 === 0;
-      if (check) {
+
+    this.slowApiService.get(requestId).subscribe((report: number) => {
+      if (report === 1) {
         console.log('Sucess!');
         this.showNotification();
         this.btnEnable();
         return;
       }
-      return this.generateReport(request);
+
+      if (report === -1) {
+        console.log('Error!');
+        this.showNotification();
+        this.btnEnable();
+        return;
+      }
+      this.sleep(3000).then(() => {
+        console.log('Wait!');
+        return this.generateReport(requestId);
+      });
     });
   }
 
@@ -73,7 +82,7 @@ export class PageOneComponent implements OnInit {
     this.slowApiService.post(request);
 
     worker.addEventListener(() => {
-      this.generateReport(request);
+      this.generateReport(request.requestId);
     });
   }
 }
