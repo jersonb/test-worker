@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AppWorkerService } from '../app.worker.service';
+import { SlowApiService } from '../slow-api.service';
+import { v4 as uuidv4 } from 'uuid';
+import { SlowRequest } from '../models';
+
 @Component({
   selector: 'app-page-one',
   templateUrl: './page-one.component.html',
@@ -9,7 +13,10 @@ import { AppWorkerService } from '../app.worker.service';
 export class PageOneComponent implements OnInit {
   btnName = 'Solicitação enviada';
   btnDisabled = false;
-  constructor(private readonly snackBar: MatSnackBar) {}
+  constructor(
+    private readonly snackBar: MatSnackBar,
+    private readonly slowApiService: SlowApiService
+  ) {}
 
   ngOnInit(): void {
     if (localStorage.getItem('btn-status') === '') {
@@ -31,7 +38,8 @@ export class PageOneComponent implements OnInit {
 
   private sleep = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
-  private async generateReport(data: any): Promise<any> {
+
+  private async generateReport(request: SlowRequest): Promise<any> {
     this.btnDisable();
     this.sleep(3000).then(() => {
       console.log('Wait!');
@@ -42,7 +50,7 @@ export class PageOneComponent implements OnInit {
         this.btnEnable();
         return;
       }
-      return this.generateReport(data);
+      return this.generateReport(request);
     });
   }
 
@@ -58,8 +66,14 @@ export class PageOneComponent implements OnInit {
 
   show() {
     const worker = new AppWorkerService();
+    const request: SlowRequest = {
+      requestId: uuidv4(),
+    };
+
+    this.slowApiService.post(request);
+
     worker.addEventListener(() => {
-      this.generateReport(new Date());
+      this.generateReport(request);
     });
   }
 }
